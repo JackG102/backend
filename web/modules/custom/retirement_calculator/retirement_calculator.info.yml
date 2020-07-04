@@ -1,0 +1,9 @@
+name: Retirement Calculator
+description: Provides a form for individual users to calculate total retirement income
+package: Retirement
+type: module
+core_version_requirement: ^8.9.0 || ^9.0
+dependencies:
+  - drupal:block
+
+
