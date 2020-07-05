@@ -1,0 +1,10 @@
+route_callbacks:
+    - 'Drupal\retirement_calculator\Routing\CalculatorRoute::routes'
+
+# retirement_calculator.user_retirement_form:
+#     path: '/user/{user}/retirement_form'
+#     defaults:
+#         _title: 'User Retirement Form'
+#         _form: \Drupal\retirement_calculator\Form\RetirementForm
+#     requirements:
+#         _permission: 'access content'

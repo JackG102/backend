@@ -1,0 +1,8 @@
+# The key is the permission machine name, and is required.
+ViewAllCalculators:
+    title: 'View All Retirement Calculators'
+    restrict access: false
+
+EditAllCalculators:
+    title: 'Edit All Retirement Calculators'
+    restrict access: false   

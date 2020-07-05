@@ -1,0 +1,5 @@
+retirement_calculator_tab_1:
+  route_name: 'retirement_calculator.user_retirement_form'
+  title: 'Retirement Calculator'
+  base_route: 'entity.user.canonical'
+  weight: 100
