@@ -19,6 +19,7 @@ class RetirementForm extends FormBase {
         $this->account = $account;
         $this->entityTypeManager = $entity_manager;
         $this->path = $path;
+        
     }
 
     public static function create(ContainerInterface $container) {
@@ -33,15 +34,26 @@ class RetirementForm extends FormBase {
         return "user_retirement_calculator_form";
     }
 
-    public function buildForm(array $form, FormStateInterface $form_state) {
-
+    public function getUserIdFromUrl() {
         // Get user ID from URL
         $current_path = $this->path->getPath();
         $exploded_path = explode('/', $current_path);
         $user_id_from_url = $exploded_path[2];
+        return $user_id_from_url;
+    }
+
+    public function loadUserObject() {
+        // Loads the user object from the User's ID in URL
+        $user = $this->entityTypeManager->getStorage('user')->load($this->getUserIdFromUrl());
+        return $user; 
+    }
+
+    public function buildForm(array $form, FormStateInterface $form_state) {
+        // Fetches User ID From URL and stores it
+        $user_id_from_url = $this->getUserIdFromUrl();
 
         // Stores value from Projected Retirement Savings field from current user
-        $user = $this->entityTypeManager->getStorage('user')->load($user_id_from_url);
+        $user = $this->loadUserObject();
         $user_savings = $user->get('field_projected_retirement_savin')->value;
 
         //Checks to see if user is viewing personal retirement calculator
@@ -64,37 +76,11 @@ class RetirementForm extends FormBase {
                 '#max' => 100
             ];
     
-            $form['check_savings'] = [
-                '#type' => 'select',
-                '#title' => $this->t('Have you invested any money for retirement?'),
-                '#description' => $this->t("It's ok if you haven't. We have to start somewhere"),
-                '#options' => [
-                    '0' => $this->t("No"),
-                    '1' => $this->t("Yes")
-                ],
-                '#default_value' => '0', 
-    
-                // Add this line for easy referencing if field has a value  
-                '#attributes' => [
-                    'name' => 'savings_check'
-                ] 
-            ];
-    
             $form['current_savings'] = [
                 '#type' => 'number',
                 '#title' => $this->t('How much have you currently saved?'),
                 '#min' => 0,
                 '#description' => 'Take into account various forms of savings and investments',
-    
-                // Checks the value of "check savings" field. If the person has
-                // saved money it makes this field visible to fill out.
-                '#states' => [
-                    'visible' => [
-                        ':input[name="savings_check"]' => [
-                            'value' => '1'
-                        ],
-                    ],
-                ]
             ];
     
             $form['rate_of_investment'] = [
@@ -148,12 +134,58 @@ class RetirementForm extends FormBase {
         }
     }
 
-    public function validateForm(array &$form, FormStateInterface $form_state) {
+    // Calculates and returns projected retirement value of portfolio
+    public function getRetirementAmount(array &$form, FormStateInterface $form_state) {
+        $current_age = $form_state->getValue('current_age');
+        $retirement_age = $form_state->getValue('retirement_age');
+        $currently_invested = $form_state->getValue('current_savings');
+        $investment_interval = $form_state->getValue('rate_of_investment');
+        $investment_interval_amount = $form_state->getValue('investment_number');
+        $annual_percentage_return = .01 * $form_state->getValue('rate_of_return');
 
+        // Calculate yearly investment
+        $yearly_investment = $currently_invested + ($investment_interval * $investment_interval_amount);
+                
+        // Calculate years of investment
+        $years_to_invest = $retirement_age - $current_age;
+
+        // Formula to calculate projected retirement savings with annual compound interest
+
+        for ($i = 0; $i < $years_to_invest; $i++) {
+            if ($i == 0 ) {
+
+                // Investment already has initial contribution from lines that declare $yearly_investment
+                $yearly_investment = ($yearly_investment + ($yearly_investment * $annual_percentage_return)); 
+            } else {
+
+                // Adds in additional contributions and frequency after the first year, 
+                // Then does percentage earned on principal after contributions
+                $yearly_investment = $yearly_investment + ($investment_interval * $investment_interval_amount); 
+                $yearly_investment = round($yearly_investment + ($yearly_investment * $annual_percentage_return), 2); 
+            }
+        }
+        $projected_retirement_value = $yearly_investment;
+        
+        // Returns final retirement value
+        return $projected_retirement_value;
     }
 
-    public function submitForm(array &$form, FormStateInterface $form_state){
+    public function validateForm(array &$form, FormStateInterface $form_state) {
+        $current_age = $form_state->getValue('current_age');
+        $retirement_age = $form_state->getValue('retirement_age');
 
+        if ($retirement_age < $current_age) {
+            $form_state->setErrorByName('retirement_age', $this->t('Ensure that your retirement age is greater than your current age, silly.'));
+        }
+    }
+
+    public function submitForm(array &$form, FormStateInterface $form_state) {
+
+        // Saves the projected retirement portfolio value to user profile 
+        $projected_retirement_value = $this->getRetirementAmount($form, $form_state);
+        $user = $this->loadUserObject();
+        $user->set('field_projected_retirement_savin', $projected_retirement_value)->save();
+        return $form;
     }
     
 }
