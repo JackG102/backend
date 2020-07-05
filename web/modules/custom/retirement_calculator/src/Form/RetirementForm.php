@@ -8,6 +8,7 @@ use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
+use Drupal\Core\Ajax\AjaxResponse;
 
 class RetirementForm extends FormBase {
 
@@ -117,11 +118,15 @@ class RetirementForm extends FormBase {
                 $form['submit'] = [
                     '#type' => 'submit',
                     '#value' => $this->t('Submit'),
+                    '#ajax' => [
+                        'callback' => '::submitForm',
+                        'wrapper' => 'retirement_summary'
+                    ]
                 ];
             }
 
-            $form['projected_retirment_savings'] = [
-                '#markup' => "<br> <span><strong>Projected Retirement Savings:</strong> $" . $user_savings . "</span>"
+            $form['projected_retirement_savings'] = [
+                '#markup' => "<div id='retirement_summary'><br> <span><strong>Projected Retirement Savings:</strong> $" . $user_savings . "</span></div",
             ];
     
             return $form;
@@ -185,7 +190,8 @@ class RetirementForm extends FormBase {
         $projected_retirement_value = $this->getRetirementAmount($form, $form_state);
         $user = $this->loadUserObject();
         $user->set('field_projected_retirement_savin', $projected_retirement_value)->save();
-        return $form;
-    }
-    
+        $form['projected_retirement_savings']['#markup'] = "<div id='retirement_summary'><br> <span><strong>Projected Retirement Savings:</strong> $" . $projected_retirement_value . "</span></div>";
+        return $form['projected_retirement_savings'];
+ 
+    }  
 }
