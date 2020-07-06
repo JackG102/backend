@@ -1,0 +1,5 @@
+name: Zany Text Filters
+description: Provides a number of text filters that can applied under CKEditor Text Profiles
+package: Useless
+type: module
+core_version_requirement: ^8.9.0 || ^9.0
