@@ -8,7 +8,6 @@ use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
-use Drupal\Core\Ajax\AjaxResponse;
 
 class RetirementForm extends FormBase {
 
@@ -16,12 +15,20 @@ class RetirementForm extends FormBase {
     protected $path;
     protected $entity_manager;
 
+    /**
+     * Dependency Injection:
+     * Instantiates the service dependencies into the Retirement Form class
+     */
     public function __construct(AccountInterface $account, EntityTypeManagerInterface $entity_manager, CurrentPathStack $path) {
         $this->account = $account;
         $this->entityTypeManager = $entity_manager;
         $this->path = $path;
-        
     }
+
+    /**
+     * Dependency Injection:
+     * Creates the container that houses the service dependencies
+     */
 
     public static function create(ContainerInterface $container) {
         return new static(
@@ -31,30 +38,50 @@ class RetirementForm extends FormBase {
         );
     }
 
+    /**
+     * Returns the Form's machine name
+     */
+
     public function getFormId() {
         return "user_retirement_calculator_form";
     }
 
+    /**
+     * Gets the user ID from the Url, where the Retirement Calculator
+     * is located on the User profile.
+     *  
+     * Note: This method does NOT get the ID from the currently logged in user.
+     */
+
     public function getUserIdFromUrl() {
-        // Get user ID from URL
         $current_path = $this->path->getPath();
         $exploded_path = explode('/', $current_path);
         $user_id_from_url = $exploded_path[2];
+        
         return $user_id_from_url;
     }
 
-    public function loadUserObject() {
-        // Loads the user object from the User's ID in URL
+    /**
+     * Loads the User object using the User ID from the getUserIdFromURL method
+     */
+
+    public function loadUserObjectFromUrl() {
         $user = $this->entityTypeManager->getStorage('user')->load($this->getUserIdFromUrl());
+        
         return $user; 
     }
+
+    /**
+     * Builds the Retirement Calculator form fields
+     * based on the permissions of the logged-in user
+     */
 
     public function buildForm(array $form, FormStateInterface $form_state) {
         // Fetches User ID From URL and stores it
         $user_id_from_url = $this->getUserIdFromUrl();
 
         // Stores value from Projected Retirement Savings field from current user
-        $user = $this->loadUserObject();
+        $user = $this->loadUserObjectFromUrl();
         $user_savings = $user->get('field_projected_retirement_savin')->value;
 
         //Checks to see if user is viewing personal retirement calculator
@@ -135,12 +162,17 @@ class RetirementForm extends FormBase {
             $form['form_deny'] = [
                 '#markup' => "<span>Permission Denied</span>"
             ];
+            
             return $form;
         }
     }
 
-    // Calculates and returns projected retirement value of portfolio
-    public function getRetirementAmount(array &$form, FormStateInterface $form_state) {
+    /**
+     * Calculates and returns projected retirement value
+     * based on the form field values
+     */ 
+
+    public function calculateRetirementAmount(array &$form, FormStateInterface $form_state) {
         $current_age = $form_state->getValue('current_age');
         $retirement_age = $form_state->getValue('retirement_age');
         $currently_invested = $form_state->getValue('current_savings');
@@ -175,6 +207,11 @@ class RetirementForm extends FormBase {
         return $projected_retirement_value;
     }
 
+    /**
+     * Validates the form values where it currently ensures that
+     * the retirement age is larger than a person's age.
+     */
+
     public function validateForm(array &$form, FormStateInterface $form_state) {
         $current_age = $form_state->getValue('current_age');
         $retirement_age = $form_state->getValue('retirement_age');
@@ -184,14 +221,21 @@ class RetirementForm extends FormBase {
         }
     }
 
-    public function submitForm(array &$form, FormStateInterface $form_state) {
+    /**
+     * Submits the form where it saves the projected retirement portfolio value
+     * to a field on the User profile
+     * 
+     * Note: This method is currently getting called from an Ajax callback on
+     * on the submit button. 
+     */
 
-        // Saves the projected retirement portfolio value to user profile 
-        $projected_retirement_value = $this->getRetirementAmount($form, $form_state);
-        $user = $this->loadUserObject();
+    public function submitForm(array &$form, FormStateInterface $form_state) {
+        $projected_retirement_value = $this->calculateRetirementAmount($form, $form_state);
+        $user = $this->loadUserObjectFromUrl();
         $user->set('field_projected_retirement_savin', $projected_retirement_value)->save();
         $form['projected_retirement_savings']['#markup'] = "<div id='retirement_summary'><br> <span><strong>Projected Retirement Savings:</strong> $" . $projected_retirement_value . "</span></div>";
+        
         return $form['projected_retirement_savings'];
- 
+
     }  
 }
