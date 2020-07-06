@@ -47,6 +47,7 @@ module:
   tour: 0
   user: 0
   views_ui: 0
+  zany_text_filters: 0
   views: 10
   standard: 1000
 theme:
