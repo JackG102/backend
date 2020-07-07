@@ -4,6 +4,8 @@ status: true
 dependencies:
   module:
     - editor
+    - media
+    - zany_text_filters
 _core:
   default_config_hash: P8ddpAIKtawJDi5SzOwCzVnnNYqONewSTJ6Xn0dW_aQ
 name: 'Basic HTML'
@@ -43,3 +45,19 @@ filters:
     status: true
     weight: 11
     settings: {  }
+  media_embed:
+    id: media_embed
+    provider: media
+    status: false
+    weight: 100
+    settings:
+      default_view_mode: default
+      allowed_media_types: {  }
+      allowed_view_modes: {  }
+  exclamation_filter:
+    id: exclamation_filter
+    provider: zany_text_filters
+    status: true
+    weight: 0
+    settings:
+      exclamation_mark_double: '1'
