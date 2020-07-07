@@ -1,0 +1,10 @@
+uuid: e5318c6a-c21f-4117-b0c4-3c5f60a7dcde
+langcode: en
+status: true
+dependencies: {  }
+id: editor
+label: Editor
+weight: 3
+is_admin: null
+permissions:
+  - ViewAllCalculators

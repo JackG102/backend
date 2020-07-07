@@ -1,0 +1,8 @@
+uuid: fcd4bf5c-9e37-4a1b-a755-3fc3d394f023
+langcode: en
+status: true
+dependencies: {  }
+name: 'Bird Species'
+vid: bird_species
+description: 'Species of birds'
+weight: 0
