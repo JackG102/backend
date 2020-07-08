@@ -1,0 +1,3 @@
+services:
+    retirement_calculator.currency_converter:
+        class: '\Drupal\retirement_calculator\CurrencyConverter'
