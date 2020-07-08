@@ -1,0 +1,7 @@
+name: Additional Fields
+description: Provides additional field types for your site's entities
+package: Field types
+type: module
+core_version_requirement: ^8.9.0 || ^9.0
+dependencies:
+    - drupal:field
