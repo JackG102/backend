@@ -236,12 +236,6 @@ class RetirementForm extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $projected_retirement_value = $this->calculateRetirementAmount($form, $form_state);
         $user = $this->loadUserObjectFromUrl();
-
-        $event = new RetirementCalculatorSubmitEvent;
-        $event->setValue($projected_retirement_value);
-
-        $this->dispatcher->dispatch(RetirementCalculatorSubmitEvent::EVENT, $event);
-
         $user->set('field_projected_retirement_savin', $projected_retirement_value)->save();
         $form['projected_retirement_savings']['#markup'] = "<div id='retirement_summary'><br> <span><strong>Projected Retirement Savings:</strong> $" . $projected_retirement_value . "</span></div>";
         
