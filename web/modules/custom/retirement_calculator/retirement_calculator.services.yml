@@ -1,3 +1,6 @@
 services:
-    retirement_calculator.currency_converter:
-        class: '\Drupal\retirement_calculator\CurrencyConverter'
+    retirement_calculator.form_notification:
+        class: '\Drupal\retirement_calculator\EventSubscriber\RetirementCalculatorConfigSubscriber'
+        arguments: ['@messenger']
+        tags:
+            - { name: 'event_subscriber' }

@@ -8,21 +8,24 @@ use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
+use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
+use Drupal\retirement_calculator\Event\RetirementCalculatorSubmitEvent;
 
 class RetirementForm extends FormBase {
 
     protected $account;
     protected $path;
     protected $entity_manager;
-
+    protected $dispatcher;
     /**
      * Dependency Injection:
      * Instantiates the service dependencies into the Retirement Form class
      */
-    public function __construct(AccountInterface $account, EntityTypeManagerInterface $entity_manager, CurrentPathStack $path) {
+    public function __construct(AccountInterface $account, EntityTypeManagerInterface $entity_manager, CurrentPathStack $path, ContainerAwareEventDispatcher $dispatcher) {
         $this->account = $account;
         $this->entityTypeManager = $entity_manager;
         $this->path = $path;
+        $this->dispatcher = $dispatcher;
     }
 
     /**
@@ -34,7 +37,8 @@ class RetirementForm extends FormBase {
         return new static(
             $container->get('current_user'),
             $container->get('entity_type.manager'),
-            $container->get('path.current')
+            $container->get('path.current'),
+            $container->get('event_dispatcher')
         );
     }
 
@@ -232,6 +236,12 @@ class RetirementForm extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $projected_retirement_value = $this->calculateRetirementAmount($form, $form_state);
         $user = $this->loadUserObjectFromUrl();
+
+        $event = new RetirementCalculatorSubmitEvent;
+        $event->setValue($projected_retirement_value);
+
+        $this->dispatcher->dispatch(RetirementCalculatorSubmitEvent::EVENT, $event);
+
         $user->set('field_projected_retirement_savin', $projected_retirement_value)->save();
         $form['projected_retirement_savings']['#markup'] = "<div id='retirement_summary'><br> <span><strong>Projected Retirement Savings:</strong> $" . $projected_retirement_value . "</span></div>";
         
