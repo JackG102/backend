@@ -4,3 +4,4 @@ services:
         arguments: ['@messenger']
         tags:
             - { name: 'event_subscriber' }
+

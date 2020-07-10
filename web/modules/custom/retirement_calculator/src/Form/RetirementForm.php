@@ -10,6 +10,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
 use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
 use Drupal\retirement_calculator\Event\RetirementCalculatorSubmitEvent;
+use Drupal\Core\Logger\LoggerChannelFactory;
 
 class RetirementForm extends FormBase {
 
@@ -17,15 +18,18 @@ class RetirementForm extends FormBase {
     protected $path;
     protected $entity_manager;
     protected $dispatcher;
+    protected $logger;
+
     /**
      * Dependency Injection:
      * Instantiates the service dependencies into the Retirement Form class
      */
-    public function __construct(AccountInterface $account, EntityTypeManagerInterface $entity_manager, CurrentPathStack $path, ContainerAwareEventDispatcher $dispatcher) {
+    public function __construct(AccountInterface $account, EntityTypeManagerInterface $entity_manager, CurrentPathStack $path, ContainerAwareEventDispatcher $dispatcher, LoggerChannelFactory $logger) {
         $this->account = $account;
         $this->entityTypeManager = $entity_manager;
         $this->path = $path;
         $this->dispatcher = $dispatcher;
+        $this->logger = $logger;
     }
 
     /**
@@ -38,7 +42,8 @@ class RetirementForm extends FormBase {
             $container->get('current_user'),
             $container->get('entity_type.manager'),
             $container->get('path.current'),
-            $container->get('event_dispatcher')
+            $container->get('event_dispatcher'),
+            $container->get('logger.factory')
         );
     }
 
@@ -147,10 +152,19 @@ class RetirementForm extends FormBase {
             // Render Submit button if user has sufficient permissions
             if ($this->account->hasPermission('EditAllCalculators') || $isPersonalCalculator) {
                 $form['submit'] = [
-                    '#type' => 'submit',
+                    '#type' => 'button',
                     '#value' => $this->t('Submit'),
                     '#ajax' => [
                         'callback' => '::submitForm',
+                        'wrapper' => 'retirement_summary'
+                    ]
+                ];
+
+                $form['submit_and_email'] = [
+                    '#type' => 'button',
+                    '#value' => $this->t('Submit & Email Results'),
+                    '#ajax' => [
+                        'callback' => '::submitFormAndEmail',
                         'wrapper' => 'retirement_summary'
                     ]
                 ];
@@ -236,10 +250,24 @@ class RetirementForm extends FormBase {
     public function submitForm(array &$form, FormStateInterface $form_state) {
         $projected_retirement_value = $this->calculateRetirementAmount($form, $form_state);
         $user = $this->loadUserObjectFromUrl();
+        $username = $user->get('name')->value;
         $user->set('field_projected_retirement_savin', $projected_retirement_value)->save();
         $form['projected_retirement_savings']['#markup'] = "<div id='retirement_summary'><br> <span><strong>Projected Retirement Savings:</strong> $" . $projected_retirement_value . "</span></div>";
+        $this->logger->get('retirement_calculator')->info("$username is projected to save @result",['@result' => $projected_retirement_value]);
+
         
         return $form['projected_retirement_savings'];
 
     }  
+
+    public function submitFormAndEmail(array &$form, FormStateInterface $form_state) {
+        $projected_retirement_value = $this->calculateRetirementAmount($form, $form_state);
+        $user = $this->loadUserObjectFromUrl();
+        $user->set('field_projected_retirement_savin', $projected_retirement_value)->save();
+        $form['projected_retirement_savings']['#markup'] = "<div id='retirement_summary'><br> <span><strong>Projected Retirement Savings:</strong> $" . $projected_retirement_value . "</span></div>";
+        $username = $user->get('name')->value;
+        $this->logger->get('retirement_calculator')->info("$username is projected to save @result",['@result' => $projected_retirement_value]);
+        
+        return $form['projected_retirement_savings'];
+    }
 }
