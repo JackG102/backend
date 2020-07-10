@@ -7,9 +7,11 @@ dependencies:
     - field.field.node.article.comment
     - field.field.node.article.field_image
     - field.field.node.article.field_tags
+    - field.field.node.article.field_test1
     - image.style.thumbnail
     - node.type.article
   module:
+    - additional_fields
     - comment
     - image
     - path
@@ -61,6 +63,12 @@ content:
       size: 60
       placeholder: ''
     third_party_settings: {  }
+  field_test1:
+    weight: 121
+    settings: {  }
+    third_party_settings: {  }
+    type: additional_fields_bird_observation_widget
+    region: content
   path:
     type: path
     weight: 30
