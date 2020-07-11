@@ -83,6 +83,9 @@ class RetirementForm extends FormBase {
      * based on the permissions of the logged-in user
      */
     public function buildForm(array $form, FormStateInterface $form_state) {
+        
+        $form['#theme'] = 'retirement_form';
+        
         // Fetches User ID From URL and stores it
         $user_id_from_url = $this->getUserIdFromUrl();
 

@@ -1,6 +1,18 @@
 <?php
 
 /**
+ * Implements hook_theme()
+ */
+
+ function retirement_calculator_theme($existing, $type, $theme, $path) {
+    return [
+        'retirement_form' => [
+            'render element' => 'form',
+        ],
+    ];
+ }
+ 
+/**
  * Implements hook_mail()
  */
 

@@ -1,0 +1,29 @@
+{#
+/**
+ * @file
+ * Default theme implementation for a 'form' element.
+ *
+ * Available variables
+ * - attributes: A list of HTML attributes for the wrapper element.
+ * - children: The child elements of the form.
+ *
+ * @see template_preprocess_form()
+ *
+ * @ingroup themeable
+ */
+#}
+<div style="display: flex;">
+    <div>
+        <form{{ attributes }}>
+            <h2>Calculator</h2>
+            {{ form }}
+        </form>
+    </div>
+    <div>
+        <h2>Results</h2>
+        <div id='calculator_graph'>
+
+        </div>
+    </div>
+</div>
+
