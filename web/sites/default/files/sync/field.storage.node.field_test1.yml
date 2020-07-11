@@ -1,0 +1,19 @@
+uuid: 8d050ddc-eebe-4069-a2f3-c3f2b35c0edc
+langcode: en
+status: true
+dependencies:
+  module:
+    - additional_fields
+    - node
+id: node.field_test1
+field_name: field_test1
+entity_type: node
+type: additional_fields_bird_observation
+settings: {  }
+module: additional_fields
+locked: false
+cardinality: -1
+translatable: true
+indexes: {  }
+persist_with_no_fields: false
+custom_storage: false

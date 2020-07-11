@@ -1,0 +1,8 @@
+name: Entity Playground
+description: Provides a module to play around with the Entity API
+package: Useless
+type: module
+core_version_requirement: ^8.9.0 || ^9.0
+
+
+

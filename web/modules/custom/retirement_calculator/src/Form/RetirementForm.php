@@ -85,6 +85,11 @@ class RetirementForm extends FormBase {
     public function buildForm(array $form, FormStateInterface $form_state) {
         
         $form['#theme'] = 'retirement_form';
+        $form['#contextual_links'] = [
+            'retirement_calculator' => [
+                'route_parameters' => [],
+            ]
+        ];
         
         // Fetches User ID From URL and stores it
         $user_id_from_url = $this->getUserIdFromUrl();
