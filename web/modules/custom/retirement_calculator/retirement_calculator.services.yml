@@ -4,4 +4,8 @@ services:
         arguments: ['@messenger']
         tags:
             - { name: 'event_subscriber' }
+    retirement_calculator.mail_retirement_results:
+        class: '\Drupal\retirement_calculator\Mailer\MailRetirementResults'
+        arguments: ['@plugin.manager.mail']
+
 

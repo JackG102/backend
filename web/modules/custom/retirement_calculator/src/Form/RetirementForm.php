@@ -8,42 +8,40 @@ use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Path\CurrentPathStack;
-use Drupal\Component\EventDispatcher\ContainerAwareEventDispatcher;
-use Drupal\retirement_calculator\Event\RetirementCalculatorSubmitEvent;
 use Drupal\Core\Logger\LoggerChannelFactory;
+use Drupal\retirement_calculator\Mailer\MailRetirementResults;
 
 class RetirementForm extends FormBase {
 
     protected $account;
     protected $path;
     protected $entity_manager;
-    protected $dispatcher;
     protected $logger;
+    protected $retirement_mailer;
 
     /**
      * Dependency Injection:
      * Instantiates the service dependencies into the Retirement Form class
      */
-    public function __construct(AccountInterface $account, EntityTypeManagerInterface $entity_manager, CurrentPathStack $path, ContainerAwareEventDispatcher $dispatcher, LoggerChannelFactory $logger) {
+    public function __construct(AccountInterface $account, EntityTypeManagerInterface $entity_manager, CurrentPathStack $path, LoggerChannelFactory $logger, MailRetirementResults $retirement_mailer) {
         $this->account = $account;
         $this->entityTypeManager = $entity_manager;
         $this->path = $path;
-        $this->dispatcher = $dispatcher;
         $this->logger = $logger;
+        $this->retirement_mailer = $retirement_mailer;
     }
 
     /**
      * Dependency Injection:
      * Creates the container that houses the service dependencies
      */
-
     public static function create(ContainerInterface $container) {
         return new static(
             $container->get('current_user'),
             $container->get('entity_type.manager'),
             $container->get('path.current'),
-            $container->get('event_dispatcher'),
-            $container->get('logger.factory')
+            $container->get('logger.factory'),
+            $container->get('retirement_calculator.mail_retirement_results')
         );
     }
 
@@ -84,7 +82,6 @@ class RetirementForm extends FormBase {
      * Builds the Retirement Calculator form fields
      * based on the permissions of the logged-in user
      */
-
     public function buildForm(array $form, FormStateInterface $form_state) {
         // Fetches User ID From URL and stores it
         $user_id_from_url = $this->getUserIdFromUrl();
@@ -153,7 +150,7 @@ class RetirementForm extends FormBase {
             if ($this->account->hasPermission('EditAllCalculators') || $isPersonalCalculator) {
                 $form['submit'] = [
                     '#type' => 'button',
-                    '#value' => $this->t('Submit'),
+                    '#value' => $this->t('Calculate'),
                     '#ajax' => [
                         'callback' => '::submitForm',
                         'wrapper' => 'retirement_summary'
@@ -162,7 +159,7 @@ class RetirementForm extends FormBase {
 
                 $form['submit_and_email'] = [
                     '#type' => 'button',
-                    '#value' => $this->t('Submit & Email Results'),
+                    '#value' => $this->t('Calculate & Email Results'),
                     '#ajax' => [
                         'callback' => '::submitFormAndEmail',
                         'wrapper' => 'retirement_summary'
@@ -227,7 +224,7 @@ class RetirementForm extends FormBase {
 
     /**
      * Validates the form values where it currently ensures that
-     * the retirement age is larger than a person's age.
+     * the retirement age is greater than a person's age.
      */
 
     public function validateForm(array &$form, FormStateInterface $form_state) {
@@ -245,6 +242,8 @@ class RetirementForm extends FormBase {
      * 
      * Note: This method is currently getting called from an Ajax callback on
      * on the submit button. 
+     * 
+     * @TODO refactor duplicated code in submit form with specialized methods
      */
 
     public function submitForm(array &$form, FormStateInterface $form_state) {
@@ -267,7 +266,16 @@ class RetirementForm extends FormBase {
         $form['projected_retirement_savings']['#markup'] = "<div id='retirement_summary'><br> <span><strong>Projected Retirement Savings:</strong> $" . $projected_retirement_value . "</span></div>";
         $username = $user->get('name')->value;
         $this->logger->get('retirement_calculator')->info("$username is projected to save @result",['@result' => $projected_retirement_value]);
-        
+
+        // Prepare data in an array that is passed to Retiremement Mailer service
+        $retirement_mailer_info = [
+            'retirement_results' => $projected_retirement_value,
+            'user' => $username
+        ];
+
+        // Invoke Retirement Mailer service that has some values to help compose the email
+        $this->retirement_mailer->sendResults($retirement_mailer_info);
+
         return $form['projected_retirement_savings'];
     }
 }

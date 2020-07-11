@@ -1,0 +1,17 @@
+<?php
+
+/**
+ * Implements hook_mail()
+ */
+
+function retirement_calculator_mail($key, &$message, $params) {
+
+    switch($key) {
+        case 'retirement_results':
+            $message['from'] = 'admin@backend.ddev.site';
+            $message['subject'] = t($params['retirement_user'] . ": Projected Retirement Results");
+            $message['body'][] = $params['message'];
+
+            break;
+    }
+}
