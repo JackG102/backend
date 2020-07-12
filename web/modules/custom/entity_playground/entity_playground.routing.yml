@@ -1,0 +1,7 @@
+entity_playground.list_of_articles:
+    path: '/list_of_articles'
+    defaults:
+        _controller: '\Drupal\entity_playground\Controller\ArticleController::content'
+        _title: "Programmatic Listing of Articles"
+    requirements:
+        _permission: 'access content'
