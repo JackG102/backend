@@ -1,0 +1,7 @@
+alpha_vantage.configuration_form:
+    path: 'admin/config/alpha_vantage/settings'
+    defaults:
+        _form: '\Drupal\alpha_vantage\Form\AlphaVantageConfigForm'
+        _title: 'Alpha Vantage Settings'
+    requirements:
+        _permission: 'administer site configuration'
