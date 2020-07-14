@@ -1,0 +1,7 @@
+name: Alpha Vantage
+description: Provides stock market and financial information using the Alpha Vantage API
+package: Financial
+type: module
+core_version_requirement: ^8.9.0 || ^9.0
+dependencies:
+  - drupal:block

@@ -1,7 +1,0 @@
-name: Block Playground
-description: Provides a number of blocks to explore caching
-package: Retirement
-type: module
-core_version_requirement: ^8.9.0 || ^9.0
-dependencies:
-  - drupal:block
