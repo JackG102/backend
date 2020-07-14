@@ -3,7 +3,6 @@ langcode: en
 status: true
 dependencies:
   config:
-    - core.entity_view_display.comment.comment.default
     - field.field.node.article.body
     - field.field.node.article.comment
     - field.field.node.article.field_image
@@ -13,7 +12,6 @@ dependencies:
     - node.type.article
   module:
     - additional_fields
-    - comment
     - image
     - text
     - user
@@ -31,15 +29,6 @@ content:
     settings: {  }
     third_party_settings: {  }
     label: hidden
-  comment:
-    type: comment_default
-    weight: 5
-    region: content
-    label: above
-    settings:
-      view_mode: default
-      pager_id: 0
-    third_party_settings: {  }
   field_image:
     type: image
     weight: 0
@@ -69,4 +58,5 @@ content:
     region: content
     settings: {  }
     third_party_settings: {  }
-hidden: {  }
+hidden:
+  comment: true
