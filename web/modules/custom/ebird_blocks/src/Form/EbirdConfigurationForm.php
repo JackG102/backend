@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\ebird_views\Form;
+namespace Drupal\ebird_blocks\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
@@ -13,13 +13,13 @@ use Drupal\Core\Form\FormStateInterface;
 
  class EbirdConfigurationForm extends ConfigFormBase {
 
-    const SETTINGS = 'ebird_views.settings';
+    const SETTINGS = 'ebird_blocks.settings';
 
     /**
      * {@inheritdoc}
      */
     public function getFormId() {
-        return 'ebird_views_configuration_form';
+        return 'ebird_blocks_configuration_form';
     }
 
     /**

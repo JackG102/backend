@@ -1,7 +1,0 @@
-ebird_views.settings:
-    path: '/admin/config/ebird_views/settings'
-    defaults:
-        _title: 'eBird Settings Form'
-        _form: '\Drupal\ebird_views\Form\EbirdConfigurationForm'
-    requirements:
-        _permission: 'access content'

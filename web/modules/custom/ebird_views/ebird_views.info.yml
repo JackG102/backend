@@ -1,8 +1,0 @@
-name: eBird Views
-description: Render data from the eBird API using Views
-type: module
-package: Views
-core_version_requirement: ^8 || ^9
-dependencies:
-  - drupal:views
-

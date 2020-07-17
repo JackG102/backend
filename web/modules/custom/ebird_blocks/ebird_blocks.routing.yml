@@ -1,0 +1,7 @@
+ebird_blocks.settings:
+    path: '/admin/config/ebird_blocks/settings'
+    defaults:
+        _title: 'eBird Settings Form'
+        _form: '\Drupal\ebird_blocks\Form\EbirdConfigurationForm'
+    requirements:
+        _permission: 'access content'
