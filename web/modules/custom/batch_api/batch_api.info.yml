@@ -1,0 +1,5 @@
+name: Batch API Playground
+description: A module to learn the Batch API
+package: Useless
+type: module
+core_version_requirement: ^8.9.0 || ^9.0

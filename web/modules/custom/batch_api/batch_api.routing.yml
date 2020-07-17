@@ -1,0 +1,7 @@
+batch_api.article_batch_form:
+    path: '/admin/config/batch_api/article_batch_form'
+    defaults:
+      _title: 'Article Batch Operation Form'
+      _form: '\Drupal\batch_api\Form\ArticleBatchOperationForm'
+    requirements:
+        _permission: 'access content' 
