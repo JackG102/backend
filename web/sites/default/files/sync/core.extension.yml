@@ -19,6 +19,7 @@ module:
   devel: 0
   devel_generate: 0
   dynamic_page_cache: 0
+  ebird_views: 0
   editor: 0
   entity_playground: 0
   field: 0
