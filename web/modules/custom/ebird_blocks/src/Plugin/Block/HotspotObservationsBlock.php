@@ -5,8 +5,9 @@ namespace Drupal\ebird_blocks\Plugin\Block;
 use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Http\ClientFactory;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Form\FormStateInterface;
 use Drupal\Component\Serialization\Json;
-
+use Drupal\Core\Block\BlockPluginInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -19,7 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * )
  */
 
- class HotspotObservationsBlock extends BlockBase implements ContainerFactoryPluginInterface {
+ class HotspotObservationsBlock extends BlockBase implements BlockPluginInterface, ContainerFactoryPluginInterface {
 
     protected $client_factory;
     protected $json;
@@ -41,10 +42,50 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
           );
     }
 
+    /**
+     * Create the form that will provide the options for what data
+     * we will render in our block
+     */
+    public function blockForm($form, FormStateInterface $form_state) {
+        $form = parent::blockForm($form, $form_state);
+        $form['location'] = [
+            '#type' => 'textfield',
+            '#title' => $this->t('Location code for eBird Hotspot'),
+            '#description' => $this->t("One can find the location code by visiting an eBird hotspot page, and copying the last part of the URL.  For example, https://ebird.org/hotspot/L159300 . One would type in 'L159300' for the Hotspot location of the Dyke Marsh."),
+            '#default_value' => $this->t('L579773'),
+            '#required' => TRUE,
+        ];
+        $form['max_results'] = [
+            '#type' => 'number',
+            '#title' => $this->t('Maximum number of results'),
+            '#description' => $this->t("The number of bird observations rendered on the screen.  Probably shouldn't be more than 100."),
+            '#default_value' => 25,
+            '#min' => 1,
+            '#max' => 150,
+        ];
+        $form['far_back'] = [
+            '#type' => 'number',
+            '#title' => $this->t('Far back'),
+            '#description' => $this->t("The number of days back to fetch observations."),
+            '#default_value' => 30,
+            '#min' => 1,
+            '#max' => 30,
+        ];
+
+        return $form;
+    }
+
+    public function blockSubmit($form, $form_state) {
+        $this->setConfigurationValue('location', $form_state->getValue('location'));
+        $this->setConfigurationValue('max_results', $form_state->getValue('max_results'));
+        $this->setConfigurationValue('far_back', $form_state->getValue('far_back'));
+    }
+
     public function build() {
         $build = [];
-        $config = \Drupal::config('ebird_blocks.settings');
-        $api_key = $config->get('api_key');
+        $config_module_values = \Drupal::config('ebird_blocks.settings');
+        $config_form_values = $this->getConfiguration();
+        $api_key = $config_module_values->get('api_key');
 
         $client = $this->client_factory->fromOptions([
             'base_uri' => 'https://api.ebird.org/'
@@ -52,9 +93,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
         $response = $client->get('/v2/data/obs/US-VA-059/recent', [
             'query' => [
-                'maxResults' => 25,
-                'r' => 'L579773',
-                'back' => 30,
+                'maxResults' => $config_form_values['max_results'],
+                'r' => $config_form_values['location'],
+                'back' => $config_form_values['far_back'],
             ],
             'headers' => [
                'X-eBirdApiToken' => $api_key, 
